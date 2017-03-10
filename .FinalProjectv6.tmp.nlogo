@@ -418,7 +418,7 @@ to draw-circle-or-square [evaluation expression_item  model-shape]
     push-stack expression_item "circle-operator-stack"
     push-stack evaluation "circle-operand-stack"]
   [if-else first-operation = true
-    [draw (word operandB expression_item) model-shape operandA
+    [draw (word operand expression_item) model-shape operandA
       set first-operation false
       push-stack expression_item "circle-operator-stack"
       push-stack evaluation "circle-operand-stack"]

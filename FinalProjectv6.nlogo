@@ -156,9 +156,8 @@ end
 to choose-draw-operand-model [expression_item]
   if Model_Chooser = "Tree"
   [make-turtle 3 expression_item]
-  if Model_Chooser = "Concentric Circles"
-  [push-stack expression_item "circle-operator-stack"
-    push-stack expression_item "circle-operand-stack"]
+  if (Model_Chooser = "Concentric Circles" or Model_Chooser = "Concentric Squares")
+  [push-stack (list expression_item expression_item) "circle-operator-stack"]
 
 end
 
@@ -177,9 +176,7 @@ to push-stack [operand stack-string]
   if stack-string = "turtle-stack"
   [set turtle-stack sentence operand turtle-stack]
   if stack-string = "circle-operator-stack"
-  [set circle-operator-stack sentence operand circle-operator-stack]
-  if stack-string = "circle-operand-stack"
-  [set circle-operand-stack sentence operand circle-operand-stack]
+  [set circle-operator-stack lput operand circle-operator-stack]
   if stack-string = "operator-operand-link-stack"
   [set operator-operand-link-stack sentence operand operator-operand-link-stack]
 end
@@ -198,13 +195,10 @@ if stack-string = "operator-operand-link-stack"[
     set operator-operand-link-stack butfirst operator-operand-link-stack
     report popped-value]
 if stack-string = "circle-operator-stack"[
-    let popped-value first circle-operator-stack
-    set circle-operator-stack butfirst circle-operator-stack
+    let popped-value last circle-operator-stack
+    set circle-operator-stack butlast circle-operator-stack
     report popped-value]
-if stack-string = "circle-operand-stack"[
-    let popped-value first circle-operand-stack
-    set circle-operand-stack butfirst circle-operand-stack
-    report popped-value]
+
 
 end
 
@@ -410,23 +404,19 @@ end
 to draw-circle-or-square [evaluation expression_item  model-shape]
   let operatorA pop-stack "circle-operator-stack"
   let operatorB pop-stack "circle-operator-stack"
-  let operandA pop-stack "circle-operand-stack"
-  let operandB pop-stack "circle-operand-stack"
 
-  if-else operator? operatorA or operator? operatorB
-  [draw expression_item model-shape operandA
-    push-stack expression_item "circle-operator-stack"
-    push-stack evaluation "circle-operand-stack"]
+  if-else operator? (first operatorA) or operator? (first operatorB)
+  [ if-else empty? circle-operator-stack
+    [ draw expression_item model-shape (ifelse-value (operator? (first operatorA) and (not (operator? (first operatorB))))
+        [last operatorB]
+        [last operatorA])
+    push-stack (list expression_item evaluation) "circle-operator-stack"]
+    [push-stack (list expression_item (word (last operatorB) expression_item (last operatorA))) "circle-operator-stack"]]
   [if-else first-operation = true
-    [draw (word operandB expression_item) model-shape operandA
+    [draw (word (last operatorB) expression_item) model-shape (last operatorA)
       set first-operation false
-      push-stack expression_item "circle-operator-stack"
-      push-stack evaluation "circle-operand-stack"]
-    [
-      push-stack expression_item "circle-operator-stack"
-      push-stack (word operandB expression_item operandA) "circle-operand-stack"
-    ]
-  ]
+      push-stack (list expression_item evaluation) "circle-operator-stack"]
+    [ push-stack (list expression_item (word (last operatorB) expression_item (last operatorA))) "circle-operator-stack"]]
 
 end
 
@@ -494,11 +484,11 @@ end
 GRAPHICS-WINDOW
 161
 97
-686
-623
+682
+619
 -1
 -1
-18.4
+15.55
 1
 10
 1
@@ -524,7 +514,7 @@ INPUTBOX
 362
 70
 Input_Expression
-1*4-4*5+2/4
+2+1*4-4*5+2/4
 1
 0
 String
@@ -554,7 +544,7 @@ CHOOSER
 Addition
 Addition
 1 2 3 4
-0
+2
 
 CHOOSER
 50
@@ -584,7 +574,7 @@ CHOOSER
 Division
 Division
 1 2 3 4
-2
+1
 
 BUTTON
 687
@@ -648,7 +638,7 @@ CHOOSER
 Addition1
 Addition1
 1 2 3 4
-0
+2
 
 CHOOSER
 688
@@ -658,7 +648,7 @@ CHOOSER
 Subtraction1
 Subtraction1
 1 2 3 4
-2
+1
 
 CHOOSER
 688
@@ -668,7 +658,7 @@ CHOOSER
 Division1
 Division1
 1 2 3 4
-0
+1
 
 CHOOSER
 687
@@ -678,7 +668,7 @@ CHOOSER
 Multiplication1
 Multiplication1
 1 2 3 4
-0
+3
 
 TEXTBOX
 649
@@ -732,7 +722,7 @@ CHOOSER
 Model_Chooser
 Model_Chooser
 "Tree" "Concentric Circles" "Concentric Squares"
-1
+2
 
 CHOOSER
 688

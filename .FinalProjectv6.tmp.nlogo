@@ -439,8 +439,8 @@ to position-circle-turtle-based-on-precedence [stack-length]
   let global-stack-length length circle-stack
   let extra (global-stack-length - stack-length)
   if-else current-rule = 1
-  [setxy (max-pxcor * 3 / 2)  (max-pycor / 2)]
-  [setxy (min-pxcor * 3 / 2) (max-pycor / 2) ]
+  [setxy (max-pxcor * 3 / 2)  (max-pycor / 2) - extra]
+  [setxy (min-pxcor * 3 / 2) - extra (max-pycor / 2) - extra]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW

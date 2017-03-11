@@ -129,7 +129,6 @@ to step-through
     let evaluation arithmetic-evaluate expression_item operandA operandB
     choose-draw-operator-model expression_item evaluation operandA operandB
     push-stack evaluation "evaluation-stack"]
-  print evaluation-stack
   set postfix_expression butfirst postfix_expression
 end
 
@@ -168,6 +167,8 @@ to push-stack [operand stack-string]
   [set circle-operator-stack lput operand circle-operator-stack]
   if stack-string = "circle-stack"
   [set circle-stack sentence operand circle-stack]
+  if stack-string = "circle-turtle-stack"
+  [set circle-turtle-stack sentence operand circle-turtle-stack]
 end
 
 to-report pop-stack [stack-string]
@@ -186,6 +187,10 @@ if stack-string = "circle-stack"[
 if stack-string = "circle-operator-stack"[
     let popped-value last circle-operator-stack
     set circle-operator-stack butlast circle-operator-stack
+    report popped-value]
+if stack-string = "circle-turtle-stack"[
+    let popped-value last circle-turtle-stack
+    set circle-turtle-stack butlast circle-turtle-stack
     report popped-value]
 end
 
@@ -346,14 +351,14 @@ to track-operand-list [curr-turtle]
   [
     set operand-list but-first operand-list
     set operand-list sentence curr-turtle operand-list
-    show operand-list
+    ;show operand-list
 
     set turtle-tracker turtle-tracker + 1
   ]
   [
     set operand-list but-last operand-list
     set operand-list sentence operand-list curr-turtle
-    show operand-list
+    ;show operand-list
     set turtle-tracker turtle-tracker + 1
   ]
 end
@@ -375,18 +380,31 @@ to draw-circle-or-square [evaluation expression_item  model-shape]
   let operatorA pop-stack "circle-operator-stack"
   let operatorB pop-stack "circle-operator-stack"
 
-  if-else operator? (first operatorA) or operator? (first operatorB)
-  [ if-else empty? circle-operator-stack
-    [ kill-and-loop (word expression_item " " (ifelse-value (operator? (first operatorA) and (not (operator? (first operatorB))))
+  if-else first-operation = true
+    [ kill-and-loop (word (last operatorB) " " expression_item " " (last operatorA)) model-shape
+      set first-operation false
+      push-stack (list expression_item "trail" evaluation) "circle-operator-stack" ]
+    [ if-else empty? circle-operator-stack
+      [ kill-and-loop (word expression_item " " (ifelse-value (operator? (first operatorA) and (not (operator? (first operatorB))))
         [last operatorB]
         [last operatorA])) model-shape
-    push-stack (list expression_item evaluation) "circle-operator-stack"]
-    [push-stack (list expression_item (word (last operatorB) expression_item (last operatorA))) "circle-operator-stack"]]
-  [if-else first-operation = true
-    [ kill-and-loop (word (last operatorB) expression_item " " (last operatorA)) model-shape
-      set first-operation false
-      push-stack (list expression_item evaluation) "circle-operator-stack"]
-    [ push-stack (list expression_item (word (last operatorB) expression_item (last operatorA))) "circle-operator-stack"]]
+    push-stack (list expression_item
+      (ifelse-value ((item 1 operatorA) = "trail" or (item 1 operatorB) = "trail")["trail"]["trail"])
+      evaluation)
+
+    "circle-operator-stack" ]
+      [if-else ((item 1 operatorA) = "trail" or (item 1 operatorB) = "trail")
+        [ kill-and-loop (word expression_item " " (ifelse-value (operator? (first operatorA) and (not (operator? (first operatorB))))
+          [last operatorB]
+          [last operatorA])) model-shape
+    push-stack (list expression_item "trail" (word (last operatorB) expression_item (last operatorA)))  "circle-operator-stack"]
+        [push-stack (list expression_item " " (word (last operatorB) expression_item (last operatorA)))  "circle-operator-stack"]]]
+
+
+
+  ;;if-else operator? (first operatorA) or operator? (first operatorB)
+  ;;[push-stack (list expression_item (word (last operatorB) expression_item (last operatorA))) "circle-operator-stack" ]
+  ;;[]
 
 end
 
@@ -411,7 +429,8 @@ to draw [label-model model-shape stack-length]
     position-circle-turtle-based-on-precedence stack-length
     attach-banner label-model
     let circle-size (size / 2)
-    ask link-neighbors [if breed = banners [reposition 45 circle-size - 1 show circle-size]]
+    ask link-neighbors [if breed = banners [reposition 45 circle-size - 1 ;show circle-size
+    ]]
     push-stack who "circle-turtle-stack"
     ]
 end
@@ -439,8 +458,8 @@ to position-circle-turtle-based-on-precedence [stack-length]
   let global-stack-length length circle-stack
   let extra (global-stack-length - stack-length)
   if-else current-rule = 1
-  [setxy (max-pxcor * 3 / 2)  (max-pycor / 2)]
-  [setxy (min-pxcor * 3 / 2) (max-pycor / 2) ]
+  [setxy (max-pxcor * 3 / 2) - extra (max-pycor / 2) - extra]
+  [setxy (min-pxcor * 3 / 2) - extra (max-pycor / 2) - extra]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -506,7 +525,7 @@ CHOOSER
 Addition
 Addition
 1 2 3 4
-2
+1
 
 CHOOSER
 50
@@ -536,7 +555,7 @@ CHOOSER
 Division
 Division
 1 2 3 4
-1
+0
 
 BUTTON
 687
@@ -593,40 +612,40 @@ NIL
 1
 
 CHOOSER
-683
-99
-791
-144
+688
+100
+796
+145
 Addition1
 Addition1
 1 2 3 4
 0
 
 CHOOSER
-683
-144
-791
-189
-Subtraction1
-Subtraction1
-1 2 3 4
-0
-
-CHOOSER
-683
+688
+145
+796
 190
-792
-235
+Subtraction1
+Subtraction1
+1 2 3 4
+2
+
+CHOOSER
+688
+191
+797
+236
 Division1
 Division1
 1 2 3 4
 1
 
 CHOOSER
-682
-236
-793
-281
+687
+237
+798
+282
 Multiplication1
 Multiplication1
 1 2 3 4
@@ -684,7 +703,7 @@ CHOOSER
 Model_Chooser
 Model_Chooser
 "Tree" "Concentric Circles" "Concentric Squares"
-2
+0
 
 CHOOSER
 688

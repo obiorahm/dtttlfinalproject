@@ -1,7 +1,7 @@
-globals [expressions postfix_expression stack evaluation-stack yincr currx curry expression-stack
+globals [expression postfix_expression stack evaluation-stack yincr currx curry expression-stack
   hide-operators operand-list turtle-tracker turtle-stack curr-step circle-count
 circle-operator-stack circle-stack current-rule circle-turtle-stack
-first-operation]
+first-operation more-digits]
 breed [circle-models circle-model]
 breed [circles circle]
 breed [boperators boperator]
@@ -13,10 +13,10 @@ breed [banners banner]
 ;;call make-postfix expression to do actual conversion to postfix form
 ;; call final-pass to empty the stack of lesser priority operators
 to parseEntry
-  let expression Input_Expression
+  set expression Input_Expression
   set postfix_expression []
   set stack []
-  make-postfix-expression expression
+  make-postfix-expression
   final-pass
   set curr-step 0
 end
@@ -27,7 +27,7 @@ to-report operator? [sign]
 end
 
 ;; converts the infix expression to a a post fix expression
-to make-postfix-expression [expression]
+to make-postfix-expression
   if empty? expression [stop]
   let expression_item first expression
   carefully
@@ -38,7 +38,16 @@ to make-postfix-expression [expression]
       [set stack sentence stack expression_item]
       [loop-pop-stack expression_item
       push-operator-stack expression_item]]]
-    make-postfix-expression butfirst expression
+  set expression butfirst expression
+  make-postfix-expression
+end
+
+to multiple-digit-read
+  let number first expression
+  if (operator? number)[stop]
+  set more-digits (word more-digits number)
+  set expression butfirst expression
+  multiple-digit-read
 end
 
 ;;takes list of operators that have not been parsed by make-postfix expression loop and empties it
@@ -388,15 +397,19 @@ to draw-circle-or-square [evaluation expression_item  model-shape]
       [ kill-and-loop (word expression_item " " (ifelse-value (operator? (first operatorA) and (not (operator? (first operatorB))))
         [last operatorB]
         [last operatorA])) model-shape
-    push-stack (list expression_item evaluation)
-    (ifelse-value ((item 1 operatorA) = "trail" or (item 1 operatorB) = "trail")["trail"]["trail"]
+    push-stack (list expression_item
+      (ifelse-value ((item 1 operatorA) = "trail" or (item 1 operatorB) = "trail")["trail"]["trail"])
+      evaluation)
+
     "circle-operator-stack" ]
       [if-else ((item 1 operatorA) = "trail" or (item 1 operatorB) = "trail")
-        [ kill-and-loop (word expression_item " " (ifelse-value (operator? (first operatorA) and (not (operator? (first operatorB))))
-          [last operatorB]
-          [last operatorA])) model-shape
+        [ kill-and-loop (word expression_item " "
+          (ifelse-value ((item 1 operatorA) = "trail")
+            [last operatorB][last operatorA])
+          ;;(ifelse-value (operator? (first operatorA) and (not (operator? (first operatorB)))) [last operatorB][last operatorA])
+    ) model-shape
     push-stack (list expression_item "trail" (word (last operatorB) expression_item (last operatorA)))  "circle-operator-stack"]
-        [push-stack (list expression_item " " (word (last operatorB) expression_item (last operatorA)))  "circle-operator-stack"]]]
+        [push-stack (list expression_item " " (word "(" (last operatorB) expression_item (last operatorA) ")" ))  "circle-operator-stack"]]]
 
 
 
@@ -493,7 +506,7 @@ INPUTBOX
 362
 70
 Input_Expression
-2+1*4-4*5+2/4
+5+2*3+1-5
 1
 0
 String
@@ -590,7 +603,7 @@ CHOOSER
 Node_Chooser
 Node_Chooser
 "Circle" "Square" "leaf"
-0
+1
 
 BUTTON
 686
@@ -627,7 +640,7 @@ CHOOSER
 Subtraction1
 Subtraction1
 1 2 3 4
-2
+0
 
 CHOOSER
 688
@@ -701,7 +714,7 @@ CHOOSER
 Model_Chooser
 Model_Chooser
 "Tree" "Concentric Circles" "Concentric Squares"
-0
+1
 
 CHOOSER
 688
@@ -735,17 +748,41 @@ NIL
 
 (a general understanding of what the model is trying to show or explain)
 
+The model tries to show how arithmetic expressions are evaluated in order.
+
 ## HOW IT WORKS
 
 (what rules the agents use to create the overall behavior of the model)
+
+The model accepts infix arithmetic expressions and converts them to postfix expressions. 
+Then evaluates the expression according to the set rules. The model then shows how the expression is being evaluated - step by step. For the tree model, it represents operands and operators with nodes (turtles) and creates links between operand and operator nodes as the operands are being operated on.
 
 ## HOW TO USE IT
 
 (how to use the model, including a description of each of the items in the Interface tab)
 
+Enter an arithmetic expression into the Input_Expression input box. The model expects binary operations and does not recognise negative numbers though expressions may result to negative numbers. The model also expects no spaces between operands and operators.
+
+Specify 2 sets of rules. One rule for the model that is drawn on the left side of the screen and the other set of rules for the model that is drawn on the right side of the screen.
+
+Select your preferred visualization. The model provides a tree, circle and square visualization. 
+
+If you choose a tree visualization, then you have the option to specify the shape of the nodes on the tree. They can be squares, circles or leaves.
+
+To see the visualization press the "evaluate expression" button.
+
+To see an animated view of the visualization select which of the rules you want to display first (left or right side rules) clear the sreen with the "clear" button, press the "parse" button. The parse button converts the expression to a form that can be evaluated by the program. Then press the animated step through button.
+
+To step through manually, clear the screen, parse the expression and then press the step-through button until the visualization gets to where you desire or until the computation is complete.
+
+
 ## THINGS TO NOTICE
 
 (suggested things for the user to notice while running the model)
+
+In the tree model, you can see a pattern of lesser priority operators appearing towards the left of the tree and higher priority operators appear towards the right side of the tree. They also seem to branch out of the main stream branch.
+
+Also, in the concentric square and circle models, note that higher priority operators do not seem to appear alone in a square or circle.
 
 ## THINGS TO TRY
 
@@ -755,9 +792,13 @@ NIL
 
 (suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
 
+The model does not recognise parenthesis and negative numbers. One extension would be to make the model so that it recognises parenthesis and negative numbers. The branches of the tree may also be animated and their shapes changed. Trees may also be built manually with the software interpreting the rules from the tree.
+
 ## NETLOGO FEATURES
 
 (interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
+
+I could not get to directly specify the order in which turtles are drawn on the same patch or around the same patch. I had to redraw smaller squares on the bigger squares after each computation.
 
 ## RELATED MODELS
 

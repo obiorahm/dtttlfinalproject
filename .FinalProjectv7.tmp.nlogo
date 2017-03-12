@@ -28,8 +28,10 @@ end
 
 ;; converts the infix expression to a a post fix expression
 to make-postfix-expression
+  set more-digits ""
   if empty? expression [stop]
-  let expression_item first expression
+  read-until-space
+  let expression_item more-digits
   carefully
   [let operand read-from-string expression_item
     set postfix_expression sentence postfix_expression operand]
@@ -38,16 +40,23 @@ to make-postfix-expression
       [set stack sentence stack expression_item]
       [loop-pop-stack expression_item
       push-operator-stack expression_item]]]
-
-    make-postfix-expression butfirst expression
+  ;set expression butfirst expression
+  make-postfix-expression
 end
 
-to multiple-digit-read
-  let number first expression
-  if (operator? number)[stop]
-  set more-digits (word more-digits number)
+
+
+to read-until-space
+  if empty? expression [stop]
+  if (first expression) = " " [set expression butfirst expression stop]
+  set more-digits (word more-digits first expression)
   set expression butfirst expression
-  multiple-digit-read
+  read-until-space
+end
+
+to end-of-digit
+  if more-digits = "" [stop]
+  let operand read-from-string more-digits
 end
 
 ;;takes list of operators that have not been parsed by make-postfix expression loop and empties it
@@ -135,6 +144,7 @@ to step-through
     choose-draw-operand-model expression_item]
   [ let operandA pop-stack "evaluation-stack"
     let operandB pop-stack "evaluation-stack"
+    print evaluation-stack
     let evaluation arithmetic-evaluate expression_item operandA operandB
     choose-draw-operator-model expression_item evaluation operandA operandB
     push-stack evaluation "evaluation-stack"]
@@ -506,7 +516,7 @@ INPUTBOX
 362
 70
 Input_Expression
-5+2*3+1-5
+22 + 1 * 44 - 4 * 5 + 2 / 4
 1
 0
 String
@@ -650,7 +660,7 @@ CHOOSER
 Division1
 Division1
 1 2 3 4
-1
+0
 
 CHOOSER
 687
@@ -660,7 +670,7 @@ CHOOSER
 Multiplication1
 Multiplication1
 1 2 3 4
-1
+0
 
 TEXTBOX
 649

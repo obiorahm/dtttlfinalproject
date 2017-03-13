@@ -44,13 +44,7 @@ to make-postfix-expression
   make-postfix-expression
 end
 
-to multiple-digit-read [expression_item]
-  set more-digits (word more-digits expression_item)
-  if (operator? (item 1 expression))[stop]
-  set expression butfirst expression
-  multiple-digit-read first expression
-end
-
+;; reads input until it encounters a space
 to read-until-space
   if empty? expression [stop]
   if (first expression) = " " [set expression butfirst expression stop]
@@ -159,16 +153,16 @@ end
 
 to choose-draw-operator-model [expression_item evaluation operandA operandB]
   if Model_chooser = "Tree" [draw-operator-and-result expression_item evaluation stop]
-  if Model_Chooser = "Concentric Circles"
+  if Model_Chooser = "Nested Circles"
   [ draw-circle-or-square evaluation expression_item "circle"]
-  if Model_Chooser = "Concentric Squares"
+  if Model_Chooser = "Nested Squares"
   [ draw-circle-or-square evaluation expression_item "square"]
 end
 
 to choose-draw-operand-model [expression_item]
   if Model_Chooser = "Tree"
   [make-turtle 3 expression_item]
-  if (Model_Chooser = "Concentric Circles" or Model_Chooser = "Concentric Squares")
+  if (Model_Chooser = "Nested Circles" or Model_Chooser = "Nested Squares")
   [push-stack (list expression_item expression_item) "circle-operator-stack"]
 
 end
@@ -521,7 +515,7 @@ INPUTBOX
 362
 70
 Input_Expression
-2+1*4-4*5+2/4
+5 + 2 * 3 + 10 - 55
 1
 0
 String
@@ -551,7 +545,7 @@ CHOOSER
 Addition
 Addition
 1 2 3 4
-1
+0
 
 CHOOSER
 50
@@ -665,7 +659,7 @@ CHOOSER
 Division1
 Division1
 1 2 3 4
-0
+1
 
 CHOOSER
 687
@@ -675,7 +669,7 @@ CHOOSER
 Multiplication1
 Multiplication1
 1 2 3 4
-0
+1
 
 TEXTBOX
 649
@@ -728,8 +722,8 @@ CHOOSER
 70
 Model_Chooser
 Model_Chooser
-"Tree" "Concentric Circles" "Concentric Squares"
-1
+"Tree" "Nested Circles" "Nested Squares"
+0
 
 CHOOSER
 688
@@ -739,7 +733,7 @@ CHOOSER
 Step_through_model
 Step_through_model
 1 2
-0
+1
 
 BUTTON
 686
@@ -761,22 +755,17 @@ NIL
 @#$#@#$#@
 ## WHAT IS IT?
 
-(a general understanding of what the model is trying to show or explain)
-
 The model tries to show how arithmetic expressions are evaluated in order.
 
 ## HOW IT WORKS
 
-(what rules the agents use to create the overall behavior of the model)
-
 The model accepts infix arithmetic expressions and converts them to postfix expressions. 
-Then evaluates the expression according to the set rules. The model then shows how the expression is being evaluated - step by step. For the tree model, it represents operands and operators with nodes (turtles) and creates links between operand and operator nodes as the operands are being operated on.
+Then evaluates the expression according to the set rules. The model then shows how the expression is being evaluated step by step. For the tree model, it represents operands and operators with nodes (turtles) and creates links between operand and operator nodes as the operands are being operated on.
 
 ## HOW TO USE IT
 
-(how to use the model, including a description of each of the items in the Interface tab)
 
-Enter an arithmetic expression into the Input_Expression input box. The model expects binary operations and does not recognise negative numbers though expressions may result to negative numbers. The model also expects no spaces between operands and operators.
+Enter an arithmetic expression into the Input_Expression input box. The model expects binary operations. The model also expects spaces between operands and operators. No spaces will lead to unexpected behavior.
 
 Specify 2 sets of rules. One rule for the model that is drawn on the left side of the screen and the other set of rules for the model that is drawn on the right side of the screen.
 
@@ -793,31 +782,22 @@ To step through manually, clear the screen, parse the expression and then press 
 
 ## THINGS TO NOTICE
 
-(suggested things for the user to notice while running the model)
 
 In the tree model, you can see a pattern of lesser priority operators appearing towards the left of the tree and higher priority operators appear towards the right side of the tree. They also seem to branch out of the main stream branch.
 
 Also, in the concentric square and circle models, note that higher priority operators do not seem to appear alone in a square or circle.
 
-## THINGS TO TRY
-
-(suggested things for the user to try to do (move sliders, switches, etc.) with the model)
 
 ## EXTENDING THE MODEL
 
 (suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
 
-The model does not recognise parenthesis and negative numbers. One extension would be to make the model so that it recognises parenthesis and negative numbers. The branches of the tree may also be animated and their shapes changed. Trees may also be built manually with the software interpreting the rules from the tree.
+The model does not recognise parenthesis or exponents. One extension would be to make the model so that it recognises parenthesis and exponents. The branches of the tree may also be animated and their shapes changed. Trees may also be built manually with the software interpreting the rules from the tree.
 
 ## NETLOGO FEATURES
 
-(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
-
 I could not get to directly specify the order in which turtles are drawn on the same patch or around the same patch. I had to redraw smaller squares on the bigger squares after each computation.
 
-## RELATED MODELS
-
-(models in the NetLogo Models Library and elsewhere which are of related interest)
 
 ## CREDITS AND REFERENCES
 
